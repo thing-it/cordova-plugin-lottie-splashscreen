@@ -156,7 +156,7 @@ import Lottie
         if loop {
             animationView?.loopMode = .loop
         }
-        animationView?.contentMode = .scaleAspectFit
+        animationView?.contentMode = .scaleAspectFill
         animationView?.animationSpeed = 1
         animationView?.autoresizesSubviews = true
         animationView?.backgroundBehavior = .pauseAndRestore
