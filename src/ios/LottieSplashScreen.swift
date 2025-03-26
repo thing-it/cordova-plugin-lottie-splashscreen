@@ -9,7 +9,6 @@ import Lottie
 
     override func pluginInitialize() {
         createObservers()
-        createView()
     }
 
     @objc(hide:)
@@ -38,6 +37,10 @@ import Lottie
         if autoHide.boolValue {
             destroyView()
         }
+    }
+
+    @objc func viewWillAppear() {
+      createView()
     }
 
     private func delayWithSeconds(_ seconds: Double, completion: @escaping () -> Void) {
@@ -257,6 +260,13 @@ import Lottie
             self,
             selector: #selector(pageDidLoad),
             name: NSNotification.Name.CDVPageDidLoad,
+            object: nil
+        )
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(viewWillAppear),
+            name: NSNotification.Name.CDVViewWillAppear,
             object: nil
         )
 
