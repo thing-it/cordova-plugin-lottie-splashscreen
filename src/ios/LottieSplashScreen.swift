@@ -34,13 +34,25 @@ import Lottie
 
     @objc func pageDidLoad() {
         let autoHide = commandDelegate?.settings["LottieAutoHideSplashScreen".lowercased()] as? NSString ?? "false"
+
+        // Wait until view has real bounds before creating view
+        if !visible {
+            DispatchQueue.main.async {
+                guard let parentView = self.viewController?.view else { return }
+                if parentView.bounds.size.width > 0 && parentView.bounds.size.height > 0 {
+                    self.createView()
+                } else {
+                    // Bounds are still zero, retry on next run loop
+                    DispatchQueue.main.async {
+                        self.createView()
+                    }
+                }
+            }
+        }
+
         if autoHide.boolValue {
             destroyView()
         }
-    }
-
-    @objc func viewWillAppear() {
-      createView()
     }
 
     private func delayWithSeconds(_ seconds: Double, completion: @escaping () -> Void) {
@@ -260,13 +272,6 @@ import Lottie
             self,
             selector: #selector(pageDidLoad),
             name: NSNotification.Name.CDVPageDidLoad,
-            object: nil
-        )
-
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(viewWillAppear),
-            name: NSNotification.Name.CDVViewWillAppear,
             object: nil
         )
 
