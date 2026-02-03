@@ -1,4 +1,6 @@
 import Lottie
+import Foundation
+import UIKit
 
 @objc(LottieSplashScreen) class LottieSplashScreen: CDVPlugin {
     var animationView: AnimationView?
@@ -28,7 +30,7 @@ import Lottie
 
     @objc(initialAnimationEnded:)
     func initialAnimationEnded(command: CDVInvokedUrlCommand) {
-        let result = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: animationEnded)
+        let result = CDVPluginResult.init(status: .ok, messageAs: animationEnded)
         commandDelegate.send(result, callbackId: command.callbackId)
     }
 
@@ -121,7 +123,7 @@ import Lottie
             playAnimation()
             visible = true
         } else if callbackId != nil {
-            let result = CDVPluginResult.init(status: CDVCommandStatus_ERROR, messageAs: LottieSplashScreenError.animationAlreadyPlaying.localizedDescription)
+            let result = CDVPluginResult.init(status: .error, messageAs: LottieSplashScreenError.animationAlreadyPlaying.localizedDescription)
             commandDelegate.send(result, callbackId: callbackId)
         }
     }
@@ -178,7 +180,8 @@ import Lottie
     }
 
     private func calculateAnimationSize(width: Int? = nil, height: Int? = nil) {
-        let fullScreenzSize = UIScreen.main.bounds
+        let window = self.viewController?.view.window
+        let screenBounds = window?.screen.bounds ?? UIScreen.main.bounds
         var animationWidth: CGFloat
         var animationHeight: CGFloat
 
@@ -188,24 +191,24 @@ import Lottie
                 .flexibleTopMargin, .flexibleLeftMargin, .flexibleBottomMargin, .flexibleRightMargin
             ]
 
-            let portrait =
-                UIApplication.shared.statusBarOrientation == UIInterfaceOrientation.portrait ||
-                UIApplication.shared.statusBarOrientation == UIInterfaceOrientation.portraitUpsideDown
+            let orientation = window?.windowScene?.interfaceOrientation ?? UIApplication.shared.statusBarOrientation
+            let portrait = orientation.isPortrait
+
             autoresizingMask.insert(portrait ? .flexibleWidth : .flexibleHeight)
 
             animationView?.autoresizingMask = autoresizingMask
-            animationWidth = fullScreenzSize.width
-            animationHeight = fullScreenzSize.height
+            animationWidth = screenBounds.width
+            animationHeight = screenBounds.height
         } else {
             animationView?.autoresizingMask = [.flexibleTopMargin, .flexibleLeftMargin, .flexibleBottomMargin, .flexibleRightMargin]
 
             let useRelativeSize = (commandDelegate?.settings["LottieRelativeSize".lowercased()] as? NSString ?? "false").boolValue
             if useRelativeSize {
-                animationWidth = fullScreenzSize.width *
+                animationWidth = screenBounds.width *
                     (width != nil ?
                         CGFloat(width!) :
                         CGFloat(Float(commandDelegate?.settings["LottieWidth".lowercased()] as? String ?? "0.2")!))
-                animationHeight = fullScreenzSize.height *
+                animationHeight = screenBounds.height *
                     (height != nil ?
                         CGFloat(height!) :
                         CGFloat(Float(commandDelegate?.settings["LottieHeight".lowercased()] as? String ?? "0.2")!))
@@ -219,7 +222,7 @@ import Lottie
             }
         }
         animationView?.frame = CGRect(x: 0, y: 0, width: animationWidth, height: animationHeight)
-        animationView?.center = CGPoint(x: UIScreen.main.bounds.midX, y: UIScreen.main.bounds.midY)
+        animationView?.center = CGPoint(x: screenBounds.midX, y: screenBounds.midY)
     }
 
     private func playAnimation() {
@@ -242,7 +245,7 @@ import Lottie
 
     private func processInvalidURLError(error: Error) {
         if callbackId != nil {
-            let result = CDVPluginResult.init(status: CDVCommandStatus_ERROR, messageAs: LottieSplashScreenError.invalidURL.localizedDescription)
+            let result = CDVPluginResult.init(status: .error, messageAs: LottieSplashScreenError.invalidURL.localizedDescription)
             commandDelegate.send(result, callbackId: callbackId)
         } else {
             NSLog("Unexpected error: \(error.localizedDescription)")
@@ -261,7 +264,7 @@ import Lottie
 
     private func sendCallback() {
         if callbackId != nil {
-            let result = CDVPluginResult.init(status: CDVCommandStatus_OK)
+            let result = CDVPluginResult.init(status: .ok)
             commandDelegate.send(result, callbackId: callbackId)
             callbackId = nil
         }
@@ -300,7 +303,8 @@ import Lottie
     }
 
     @objc private func deviceOrientationChanged() {
-        animationView?.center = CGPoint(x: UIScreen.main.bounds.midX, y: UIScreen.main.bounds.midY)
+        let screenBounds = self.viewController?.view.window?.screen.bounds ?? UIScreen.main.bounds
+        animationView?.center = CGPoint(x: screenBounds.midX, y: screenBounds.midY)
     }
 }
 
