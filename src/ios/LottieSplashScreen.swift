@@ -31,7 +31,7 @@ import UIKit
     @objc(initialAnimationEnded:)
     func initialAnimationEnded(command: CDVInvokedUrlCommand) {
         let result = CDVPluginResult.init(status: .ok, messageAs: animationEnded)
-        commandDelegate.send(result, callbackId: command.callbackId)
+        commandDelegate.send(result, callbackId: command.callbackId!)
     }
 
     @objc func pageDidLoad() {
@@ -124,7 +124,7 @@ import UIKit
             visible = true
         } else if callbackId != nil {
             let result = CDVPluginResult.init(status: .error, messageAs: LottieSplashScreenError.animationAlreadyPlaying.localizedDescription)
-            commandDelegate.send(result, callbackId: callbackId)
+            commandDelegate.send(result, callbackId: callbackId!)
         }
     }
 
@@ -246,7 +246,7 @@ import UIKit
     private func processInvalidURLError(error: Error) {
         if callbackId != nil {
             let result = CDVPluginResult.init(status: .error, messageAs: LottieSplashScreenError.invalidURL.localizedDescription)
-            commandDelegate.send(result, callbackId: callbackId)
+            commandDelegate.send(result, callbackId: callbackId!)
         } else {
             NSLog("Unexpected error: \(error.localizedDescription)")
         }
@@ -265,7 +265,7 @@ import UIKit
     private func sendCallback() {
         if callbackId != nil {
             let result = CDVPluginResult.init(status: .ok)
-            commandDelegate.send(result, callbackId: callbackId)
+            commandDelegate.send(result, callbackId: callbackId!)
             callbackId = nil
         }
     }
